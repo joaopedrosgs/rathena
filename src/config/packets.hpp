@@ -45,7 +45,7 @@
 	/// Comment to disable the official packet obfuscation support.
 	/// This requires PACKETVER 2011-08-17 or newer.
 	#ifndef PACKET_OBFUSCATION
-		#define PACKET_OBFUSCATION
+		//#define PACKET_OBFUSCATION   // disabled for the ragnadot client (plaintext LAN dev)
 
 		// Define these inside src/custom/defines_pre.hpp or src/custom/defines_post.hpp
 		//#define PACKET_OBFUSCATION_KEY1 <key1>
