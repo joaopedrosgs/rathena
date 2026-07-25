@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -52,6 +52,17 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		mes "Removed marks 1-3.";
 		close;
 	case 5:
+		// Pile up text, then `clear` it: a client that ignores ZC_CLEAR_DIALOG
+		// keeps all six lines and shows the OLDEST, because the box is fixed size.
+		mes "LINE ONE - should be gone";
+		mes "LINE TWO - should be gone";
+		mes "LINE THREE - should be gone";
+		next;
+		clear;
+		setdialogalign 2;   // DIALOG_ALIGN_CENTER
+		mes "ONLY THIS LINE should remain, centred.";
+		close;
+	case 6:
 		close;
 	}
 	end;
