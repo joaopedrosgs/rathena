@@ -1,0 +1,48 @@
+//===== rAthena Script =======================================
+//= Ragnadot client test NPC
+//===== Description: =========================================
+//= A fixture for the Godot client (../ragnarok), not content.
+//=
+//= Several NPC script primitives cannot be provoked from a GM
+//= command — they only happen inside a running script — and the
+//= ones that BLOCK are exactly the ones a client must get right:
+//= `progressbar` stops the script and sets WIP_DISABLE_ALL, so a
+//= client that ignores ZC_PROGRESS soft-locks the player. Every
+//= quest script that uses one is behind prerequisites, so this
+//= exists to trigger them on demand in prontera.
+//=
+//= Reload after editing with @reloadscript (no restart needed).
+//===== Menu: ================================================
+//= Progress bar  -> ZC_PROGRESS, then CZ_PROGRESS after N sec
+//=                  (answering EARLY is a cancel, so this also
+//=                   tells you which happened)
+//============================================================
+
+prontera,158,193,4	script	Ragnadot Test	4_M_01,{
+	mes "[Ragnadot Test]";
+	mes "Client test fixture.";
+	next;
+	switch (select("Progress bar (3s):Progress bar (8s):Cancel")) {
+	case 1:
+		callsub S_Progress, 3;
+		break;
+	case 2:
+		callsub S_Progress, 8;
+		break;
+	case 3:
+		close;
+	}
+	end;
+
+// The line after `progressbar` runs ONLY if the client answered at or after the
+// server's timeout. An early answer is read as a cancel and ends the script, so
+// the two outcomes are distinguishable from the client side.
+S_Progress:
+	.@secs = getarg(0);
+	mes "[Ragnadot Test]";
+	mes "Waiting " + .@secs + " seconds...";
+	progressbar "0xffff00", .@secs;
+	mes "[Ragnadot Test]";
+	mes "Wait COMPLETED (not cancelled).";
+	close;
+}
