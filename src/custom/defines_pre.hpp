@@ -10,10 +10,24 @@
 
 /**
  * Pin the packet version to match the Godot client (ragnadot).
- * One version, exactly — never multi-version support.
- * The client mirror lives in net/protocol/packet_ver.gd and MUST equal this.
+ *
+ * 20211103 is the default the dev server and the client agree on, and the
+ * client mirror in net/protocol/packet_ver.gd MUST equal whatever is built
+ * here. It is a default rather than a hard #define so a second build can
+ * target a modern client without editing tracked source:
+ *
+ *     msbuild rAthena.sln /p:Configuration=Release /p:Platform=x64
+ *             /p:DefineConstants=PACKETVER=20250716
+ *
+ * Every vcxproj already threads $(DefineConstants) into its preprocessor
+ * definitions, so that override needs no project edit.
+ * The client selects its matching codec at runtime with PacketVer.select.
+ * Only ONE version is live per map-server build — rAthena resolves PACKETVER
+ * at compile time; "support both" means both builds work, not both at once.
  */
+#ifndef PACKETVER
 #define PACKETVER 20211103
+#endif
 
 /**
  * Renewal mode is rAthena's default — nothing to set here.
