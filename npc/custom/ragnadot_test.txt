@@ -78,4 +78,19 @@ S_Progress:
 	mes "[Ragnadot Test]";
 	mes "Wait COMPLETED (not cancelled).";
 	close;
+
+// ZC_QUEST_NOTIFY_EFFECT -- the "!"/"?" a player navigates by. `questinfo` is
+// re-evaluated on map entry and again on @setquest / @erasequest, so BOTH
+// directions can be provoked from a GM command even though the packet itself
+// cannot be sent by one:
+//
+//   @erasequest 1000  -> yellow "!" goes up over this NPC
+//   @setquest 1000    -> it comes down, and a purple mark replaces it
+//
+// Two colours on purpose: the client maps the server's colour enum onto its own
+// palette, and one colour would not prove the mapping.
+OnInit:
+	questinfo( QTYPE_QUEST, QMARK_YELLOW, "isbegin_quest(1000) == 0" );
+	questinfo( QTYPE_CLICKME, QMARK_PURPLE, "isbegin_quest(1000) == 1" );
+	end;
 }
