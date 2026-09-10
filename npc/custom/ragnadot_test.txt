@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -63,6 +63,19 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		mes "ONLY THIS LINE should remain, centred.";
 		close;
 	case 6:
+		// ZC_PLAY_NPC_BGM. `playBGM` is the script-driven half of music: map
+		// entry picks a track from the client's own mp3nametable, this
+		// overrides it until the next map change. The name goes on the wire
+		// exactly as written here, with no extension -- the client appends its
+		// own. 99 is chosen because it is nothing like Prontera's 210, so a
+		// client that ignored the packet and one that obeyed it cannot be
+		// confused by ear.
+		mes "[Ragnadot Test]";
+		mes "Playing BGM ^0000FF99^000000 (Prontera's own is 210).";
+		mes "Cross a map boundary to get the map's track back.";
+		playBGM "99";
+		close;
+	case 7:
 		close;
 	}
 	end;
