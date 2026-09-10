@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -92,6 +92,21 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		hateffect HAT_EF_SNOW, 0;
 		close;
 	case 9:
+		// ZC_REPUTE_INFO with ONE entry -- the same opcode map entry uses for the
+		// whole list, so a client that replaced its table instead of merging would
+		// lose the other three factions here. Orc Village (1), +100.
+		mes "[Ragnadot Test]";
+		add_reputation_points 1, 100;
+		mes "Orc Village reputation +100, now " + get_reputation_points(1) + ".";
+		close;
+	case 10:
+		// ZC_REPUTE_OPEN. No arguments: group 0, faction 0, so rAthena sets
+		// mode 1 ("0 = red texture" -- nothing highlighted).
+		mes "[Ragnadot Test]";
+		mes "Opening the reputation window.";
+		reputationui;
+		close;
+	case 11:
 		close;
 	}
 	end;
