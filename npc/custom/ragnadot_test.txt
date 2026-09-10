@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -76,6 +76,22 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		playBGM "99";
 		close;
 	case 7:
+		// ZC_EQUIPMENT_EFFECT, switched ON. `hateffect` targets the PLAYER talking
+		// to this NPC, so the aura lands on you and the packet carries your own
+		// account id -- the self path, which the unit registry never holds.
+		// HAT_EF_SNOW (6) because it is unmistakable on screen.
+		mes "[Ragnadot Test]";
+		mes "Snow hat effect ^0000FFON^000000 (HAT_EF_SNOW, id 6).";
+		hateffect HAT_EF_SNOW, 1;
+		close;
+	case 8:
+		// ...and OFF: status 0, one effect. Turn it on twice first and a client
+		// that treated status 1 as a REPLACE is already visibly wrong.
+		mes "[Ragnadot Test]";
+		mes "Snow hat effect ^FF0000OFF^000000.";
+		hateffect HAT_EF_SNOW, 0;
+		close;
+	case 9:
 		close;
 	}
 	end;
