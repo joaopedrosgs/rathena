@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -107,6 +107,20 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		reputationui;
 		close;
 	case 11:
+		// ZC_NOTIFY_EFFECT2 on the PLAYER: EF_READYPORTAL (35), the ~25 s portal
+		// ring, long enough that the removal below lands while it still plays.
+		mes "[Ragnadot Test]";
+		mes "Portal ring ON (EF_READYPORTAL, 35).";
+		specialeffect2 35;
+		close;
+	case 12:
+		// ZC_REMOVE_EFFECT for the same id on the same unit. A client that
+		// ignores it leaves the ring up until it runs out on its own.
+		mes "[Ragnadot Test]";
+		mes "Portal ring OFF.";
+		removespecialeffect2 35;
+		close;
+	case 13:
 		close;
 	}
 	end;
