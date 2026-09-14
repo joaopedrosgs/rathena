@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -121,6 +121,21 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		removespecialeffect2 35;
 		close;
 	case 13:
+		// SC_INTRAVISION -- what Maya Purple's bIntravision also grants. Its icon
+		// is EFST_CLAIRVOYANCE (184): the client's only statement that this
+		// character sees hidden/cloaked units, which it draws as black
+		// silhouettes instead of not at all. rAthena also starts sending such
+		// units' movement to us (clif_send's intravision exemption).
+		mes "[Ragnadot Test]";
+		mes "Intravision ^0000FFON^000000 for 10 minutes.";
+		sc_start SC_INTRAVISION, 600000, 1;
+		close;
+	case 14:
+		mes "[Ragnadot Test]";
+		mes "Intravision ^FF0000OFF^000000.";
+		sc_end SC_INTRAVISION;
+		close;
+	case 15:
 		close;
 	}
 	end;
