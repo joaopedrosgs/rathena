@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Petal hat effect on:Petal hat effect off:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -136,6 +136,20 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		sc_end SC_INTRAVISION;
 		close;
 	case 15:
+		// ZC_EQUIPMENT_EFFECT for an id the client draws as an STR. HAT_EF_SNOW (7/8
+		// above) is an effect-table row whose recipe is a procedural FUNC, so it
+		// reaches the client and draws nothing; HAT_EF_BLOSSOM_FLUTTERING (1) is
+		// the client's efst_blossom_fluttering\sakura.str, falling petals.
+		mes "[Ragnadot Test]";
+		mes "Petal hat effect ^0000FFON^000000 (HAT_EF_BLOSSOM_FLUTTERING, id 1).";
+		hateffect HAT_EF_BLOSSOM_FLUTTERING, 1;
+		close;
+	case 16:
+		mes "[Ragnadot Test]";
+		mes "Petal hat effect ^FF0000OFF^000000.";
+		hateffect HAT_EF_BLOSSOM_FLUTTERING, 0;
+		close;
+	case 17:
 		close;
 	}
 	end;
