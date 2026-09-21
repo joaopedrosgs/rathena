@@ -25,7 +25,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 	mes "[Ragnadot Test]";
 	mes "Client test fixture.";
 	next;
-	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Petal hat effect on:Petal hat effect off:Cancel")) {
+	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Petal hat effect on:Petal hat effect off:Send test mail:Send test mail with zeny:Cancel")) {
 	case 1:
 		callsub S_Progress, 3;
 		break;
@@ -150,6 +150,21 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		hateffect HAT_EF_BLOSSOM_FLUTTERING, 0;
 		close;
 	case 17:
+		// RODEX fixture. `mail` posts to a CHARACTER id, and the inbox lives on
+		// the char server -- the map server only learns about it when the client
+		// asks (CZ_REQ_REFRESH_MAIL_LIST2), which is exactly the path under test.
+		mes "[Ragnadot Test]";
+		mes "Mail sent to you (text only).";
+		mail getcharid(0), "Ragnadot Test", "Carta de teste", "Sem anexo.";
+		close;
+	case 18:
+		// Zeny sets MAIL_TYPE_ZENY in the list entry flags; an item would set
+		// MAIL_TYPE_ITEM. The flags are a bitmask and the client resolves them.
+		mes "[Ragnadot Test]";
+		mes "Mail sent to you (1000 zeny attached).";
+		mail getcharid(0), "Ragnadot Test", "Carta com zeny", "Com anexo.", 1000;
+		close;
+	case 19:
 		close;
 	}
 	end;
