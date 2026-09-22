@@ -11,3 +11,4 @@
 //ACMD_DEF(newcommand),
 ACMD_DEF(populate),
 ACMD_DEF(reloadpopenginedb),
+ACMD_DEF(observer),

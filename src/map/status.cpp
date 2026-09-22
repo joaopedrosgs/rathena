@@ -1507,6 +1507,10 @@ int32 status_damage(block_list *src,block_list *target,int64 dhp, int64 dsp, int
 		    && !population_engine_shell_is_mortal(pop_sd)
 		    && (hp > 0 || sp > 0 || ap > 0))
 			return 0;
+		// @observer: a recording camera must survive whatever it films, including
+		// damage that never went through target selection.
+		if (pop_sd != nullptr && pop_sd->state.observer && (hp > 0 || sp > 0 || ap > 0))
+			return 0;
 	}
 
 	if(sp && !(target->type&BL_CONSUME))

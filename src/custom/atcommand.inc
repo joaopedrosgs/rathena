@@ -18,6 +18,65 @@
 //	return 0;
 //}
 
+/**
+ * @observer [on|off|status] -- a camera character for recorded scenes.
+ *
+ * A recording client stands in the middle of the action it films, so it has to
+ * be invisible to everyone, untargetable, ignored by monsters and impossible to
+ * kill -- otherwise it walks into its own shot, draws aggro and dies mid-take.
+ * `@hide` and `@monsterignore` each cover part of that; neither covers damage
+ * that never asks who may be targeted (status ticks, splash from a unit, script
+ * damage), which is what `state.observer` does in status_damage().
+ *
+ * Every form ends with ONE machine-readable line, so a driving tool can assert
+ * the state instead of trusting that the command worked:
+ *   [observer] hidden=1 attack_immune=1 cannot_die=1 ignored_by_monsters=1
+ */
+ACMD_FUNC(observer)
+{
+	nullpo_retr(-1, sd);
+
+	char arg[16] = "";
+	if (message != nullptr && *message)
+		sscanf(message, "%15s", arg);
+
+	bool want_on = false, want_off = false;
+	if (!strcmpi(arg, "on"))
+		want_on = true;
+	else if (!strcmpi(arg, "off"))
+		want_off = true;
+	else if (!*arg)
+		want_on = !sd->state.observer, want_off = sd->state.observer;
+	else if (strcmpi(arg, "status")) {
+		clif_displaymessage(fd, "Usage: @observer [on|off|status]");
+		return -1;
+	}
+
+	if (want_on) {
+		if (!pc_isinvisible(sd))
+			atcommand_hide(fd, sd, command, "");
+		sd->state.block_action |= PCBLOCK_IMMUNE;
+		sd->state.observer = 1;
+	} else if (want_off) {
+		if (pc_isinvisible(sd))
+			atcommand_hide(fd, sd, command, "");
+		sd->state.block_action &= ~PCBLOCK_IMMUNE;
+		sd->state.observer = 0;
+	}
+
+	const bool hidden = pc_isinvisible(sd);
+	const bool immune = (sd->state.block_action & PCBLOCK_IMMUNE) != 0;
+	char buf[128];
+	// Monsters pick targets through status_check_visibility (which rejects an
+	// invisible PC) and attack through battle_check_target (which rejects an
+	// immune one), so either is enough for them to leave the observer alone.
+	snprintf(buf, sizeof(buf),
+		"[observer] hidden=%d attack_immune=%d cannot_die=%d ignored_by_monsters=%d",
+		hidden, immune || hidden, sd->state.observer ? 1 : 0, hidden || immune);
+	clif_displaymessage(fd, buf);
+	return 0;
+}
+
 
 /* @populate — population engine (runtime PC shells; alias @fakeplayers) */
 /**

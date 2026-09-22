@@ -393,6 +393,7 @@ public:
 	//status_calc_pc, while special_state is recalculated in each call. [Skotlex]
 	struct s_state {
 		uint32 population_combat : 1;
+		uint32 observer : 1; // @observer: takes no HP/SP/AP damage (see status_damage)
 		uint32 active : 1; //Marks active player (not active is logging in/out, or changing map servers)
 		uint32 menu_or_input : 1;// if a script is waiting for feedback from the player
 		uint32 dead_sit : 2;
