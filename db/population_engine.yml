@@ -36,7 +36,8 @@
 #                back to the engine's built-in class default.
 # NameProfile:   Name distribution profile (default = "default").
 # ChatProfile:   Chat profile for ambient dialogue.
-# Hair:          [min, max] range of hair style IDs.
+# Hair:          [min, max] range of hair style IDs. Start at 1: the client
+#                ships no style-0 head sprite, so a style-0 shell has no head.
 # HairColor:     [min, max] range of hair colour IDs.
 # ClothesColor:  [min, max] range of clothes colour IDs.
 #
@@ -101,7 +102,7 @@ Body:
       Novice: novice_set
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     Flags:
@@ -122,7 +123,7 @@ Body:
       Alchemist: para_merchant
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     Flags:
@@ -136,7 +137,7 @@ Body:
       Knight: para_knight_base
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -160,7 +161,7 @@ Body:
       Crusader: para_crusader
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -185,7 +186,7 @@ Body:
       Sage  : para_mage
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -209,7 +210,7 @@ Body:
       Dancer: para_bow
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -233,7 +234,7 @@ Body:
       Monk: para_monk
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -256,7 +257,7 @@ Body:
       AssassinCross: para_assassin_katar
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -278,7 +279,7 @@ Body:
       Rogue: para_thief
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -302,7 +303,7 @@ Body:
       Alchemist : para_merchant
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [30, 60]
@@ -328,7 +329,7 @@ Body:
       SoulLinker        : para_mage
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -350,7 +351,7 @@ Body:
       Gunslinger: para_gun
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
@@ -372,7 +373,7 @@ Body:
       Ninja: para_ninja
     NameProfile: default
     ChatProfile: default
-    Hair: [0, 42]
+    Hair: [1, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
