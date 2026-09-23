@@ -196,3 +196,8 @@ OnInit:
 	questinfo( QTYPE_CLICKME, QMARK_PURPLE, "isbegin_quest(1000) == 1" );
 	end;
 }
+
+// A cash shop (ZC_PC_CASH_POINT_ITEMLIST / CZ_PC_BUY_CASH_POINT_ITEM) for the
+// client's point-shop window. None ships enabled on this server. Prices are in
+// #CASHPOINTS (GM: @cash N); "Free Cash" is #KAFRAPOINTS (GM: @points N).
+prontera,160,193,4	cashshop	Ragnadot Cash	4_M_02,501:10,909:2
