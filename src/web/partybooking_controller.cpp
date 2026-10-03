@@ -4,6 +4,7 @@
 #include "partybooking_controller.hpp"
 
 #include <string>
+#include <nlohmann/json.hpp>
 
 #include <common/showmsg.hpp>
 #include <common/sql.hpp>
@@ -46,20 +47,16 @@ public:
 };
 
 std::string s_party_booking_entry::to_json( std::string& world_name ){
-	return
-		"{ \"AID\": " + std::to_string( this->account_id ) +
-		", \"GID\": " + std::to_string( this->char_id ) +
-		", \"CharName\": \"" + this->char_name + "\""
-		", \"WorldName\": \"" + world_name + "\""
-		", \"Tanker\": " + ( this->tanker ? "1": "0" ) +
-		", \"Healer\": " + ( this->healer ? "1": "0" ) +
-		", \"Dealer\": " + ( this->damagedealer ? "1" : "0" ) +
-		", \"Assist\": " + ( this->assist ? "1" : "0" ) +
-		", \"MinLV\": " + std::to_string( this->minimum_level ) +
-		", \"MaxLV\": " + std::to_string( this->maximum_level ) +
-		", \"Memo\": \"" + this->comment + "\""
-		", \"Type\": " + std::to_string( this->purpose ) +
-		"}";
+	// User text must be JSON-escaped, including quotes, backslashes and controls.
+	// Keep the native API's numeric 0/1 roles rather than JSON booleans.
+	return nlohmann::json{
+		{ "AID", this->account_id }, { "GID", this->char_id },
+		{ "CharName", this->char_name }, { "WorldName", world_name },
+		{ "Tanker", this->tanker ? 1 : 0 }, { "Healer", this->healer ? 1 : 0 },
+		{ "Dealer", this->damagedealer ? 1 : 0 }, { "Assist", this->assist ? 1 : 0 },
+		{ "MinLV", this->minimum_level }, { "MaxLV", this->maximum_level },
+		{ "Memo", this->comment }, { "Type", this->purpose }
+	}.dump();
 }
 
 bool party_booking_read( std::string& world_name, std::vector<s_party_booking_entry>& output, const std::string& condition, const std::string& order ){
@@ -68,16 +65,14 @@ bool party_booking_read( std::string& world_name, std::vector<s_party_booking_en
 	auto handle = sl.getHandle();
 	SqlStmt stmt{ *handle };
 	s_party_booking_entry entry;
-	char world_name_escaped[WORLD_NAME_LENGTH * 2 + 1];
 	char char_name[NAME_LENGTH ];
 	char comment[COMMENT_LENGTH + 1];
 
-	Sql_EscapeString( nullptr, world_name_escaped, world_name.c_str() );
-
 	std::string query = "SELECT `account_id`, `char_id`, `char_name`, `purpose`, `assist`, `damagedealer`, `healer`, `tanker`, `minimum_level`, `maximum_level`, `comment` FROM `" + std::string( partybookings_table ) + "` WHERE `world_name` = ? AND " + condition + order;
 
-	if( SQL_SUCCESS != stmt.Prepare( query.c_str() )
-		|| SQL_SUCCESS != stmt.BindParam( 0, SQLDT_STRING, (void*)world_name_escaped, strlen( world_name_escaped ) )
+	// Search conditions include LIKE percent signs: this is SQL, not a printf format.
+	if( SQL_SUCCESS != stmt.PrepareStr( query.c_str() )
+		|| SQL_SUCCESS != stmt.BindParam( 0, SQLDT_STRING, (void*)world_name.c_str(), world_name.length() )
 		|| SQL_SUCCESS != stmt.Execute()
 		|| SQL_SUCCESS != stmt.BindColumn( 0, SQLDT_UINT32, &entry.account_id )
 		|| SQL_SUCCESS != stmt.BindColumn( 1, SQLDT_UINT32, &entry.char_id )
