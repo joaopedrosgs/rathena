@@ -25783,12 +25783,10 @@ static int32 clif_parse(int32 fd)
 		}
 	}
 	if ((int32)RFIFOREST(fd) < packet_len){
-		ShowWarning( "clif_parse: Received packet 0x%04x with expected packet length %d, but only %d bytes remaining, disconnecting session #%d.\n", cmd, packet_len, RFIFOREST( fd ), fd );
-#ifdef DUMP_INVALID_PACKET
-		ShowDump( RFIFOP( fd, 0 ), RFIFOREST( fd ) );
-#endif
-		set_eof( fd );
-		return 0; // not enough data received to form the packet
+		// TCP may split a valid packet across reads. Keep its bytes and wait
+		// without consuming the opcode or advancing the obfuscation key.
+		// Unknown opcodes and invalid declared lengths are rejected above.
+		return 0;
 	}
 
 #ifdef PACKET_OBFUSCATION
