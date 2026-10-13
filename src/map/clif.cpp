@@ -84,7 +84,7 @@ unsigned long color_table[COLOR_MAX];
 
 #include "clif_obfuscation.hpp"
 static bool clif_walk_request(map_session_data* sd, int16 x, int16 y);
-#include "ragnadot_motion.inc"
+#include "odin_motion.inc"
 static bool clif_session_isValid( const map_session_data* sd );
 static void clif_loadConfirm( map_session_data *sd );
 static void clif_favorite_item( map_session_data& sd, uint16 index );

@@ -1,7 +1,7 @@
 // Copyright (c) rAthena Dev Teams - Licensed under GNU GPL
 // For more information, see LICENCE in the main folder
 //
-// ragnadot dev overlay. See the ragnadot client repo: docs/server-setup.md.
+// odin dev overlay. See the odin client repo: docs/server-setup.md.
 // This file and conf/import/*_conf.txt are the only additions; the sole edit
 // to upstream source is the packet-obfuscation line in src/config/packets.hpp.
 
@@ -9,7 +9,7 @@
 #define CONFIG_CUSTOM_DEFINES_PRE_HPP
 
 /**
- * Pin the packet version to match the Godot client (ragnadot).
+ * Pin the packet version to match the Godot client (odin).
  *
  * 20211103 is the default the dev server and the client agree on, and the
  * client mirror in net/protocol/packet_ver.gd MUST equal whatever is built

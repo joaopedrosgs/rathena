@@ -504,7 +504,7 @@ public:
 	uint16 mapindex;
 	unsigned char head_dir; //0: Look forward. 1: Look right, 2: Look left.
 	t_tick client_tick;
-	// Optional Ragnadot motion v1; never transmitted to unnegotiated clients.
+	// Optional Odin motion v1; never transmitted to unnegotiated clients.
 	struct {
 		bool enabled = false;
 		t_tick probe_at = 0;

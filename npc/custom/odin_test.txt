@@ -1,5 +1,5 @@
 //===== rAthena Script =======================================
-//= Ragnadot client test NPC
+//= Odin client test NPC
 //===== Description: =========================================
 //= A fixture for the Godot client (../ragnarok), not content.
 //=
@@ -21,8 +21,8 @@
 //=                  id, and removal by id
 //============================================================
 
-prontera,158,193,4	script	Ragnadot Test	4_M_01,{
-	mes "[Ragnadot Test]";
+prontera,158,193,4	script	Odin Test	4_M_01,{
+	mes "[Odin Test]";
 	mes "Client test fixture.";
 	next;
 	switch (select("Progress bar (3s):Progress bar (8s):Map marks:Remove marks:Clear + align:Script BGM:Hat effect on:Hat effect off:Reputation +100:Reputation window:Effect on:Effect off:Intravision on:Intravision off:Petal hat effect on:Petal hat effect off:Send test mail:Send test mail with zeny:Cancel")) {
@@ -40,7 +40,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		viewpoint 0, 150, 180, 2, 0x00FF00;   // 15 seconds, green
 		viewpoint 1, 120, 120, 3, 0x0000FF;   // ...first here
 		viewpoint 1, 170, 200, 3, 0x0000FF;   // ...then moved, same id
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Set 3 marks (id 1 sticky, id 2 for 15s, id 3 moved).";
 		mes "Expect THREE pins, not four.";
 		close;
@@ -48,7 +48,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		viewpoint 2, 0, 0, 1, 0;
 		viewpoint 2, 0, 0, 2, 0;
 		viewpoint 2, 0, 0, 3, 0;
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Removed marks 1-3.";
 		close;
 	case 5:
@@ -70,7 +70,7 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// own. 99 is chosen because it is nothing like Prontera's 210, so a
 		// client that ignored the packet and one that obeyed it cannot be
 		// confused by ear.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Playing BGM ^0000FF99^000000 (Prontera's own is 210).";
 		mes "Cross a map boundary to get the map's track back.";
 		playBGM "99";
@@ -80,14 +80,14 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// to this NPC, so the aura lands on you and the packet carries your own
 		// account id -- the self path, which the unit registry never holds.
 		// HAT_EF_SNOW (6) because it is unmistakable on screen.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Snow hat effect ^0000FFON^000000 (HAT_EF_SNOW, id 6).";
 		hateffect HAT_EF_SNOW, 1;
 		close;
 	case 8:
 		// ...and OFF: status 0, one effect. Turn it on twice first and a client
 		// that treated status 1 as a REPLACE is already visibly wrong.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Snow hat effect ^FF0000OFF^000000.";
 		hateffect HAT_EF_SNOW, 0;
 		close;
@@ -95,28 +95,28 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// ZC_REPUTE_INFO with ONE entry -- the same opcode map entry uses for the
 		// whole list, so a client that replaced its table instead of merging would
 		// lose the other three factions here. Orc Village (1), +100.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		add_reputation_points 1, 100;
 		mes "Orc Village reputation +100, now " + get_reputation_points(1) + ".";
 		close;
 	case 10:
 		// ZC_REPUTE_OPEN. No arguments: group 0, faction 0, so rAthena sets
 		// mode 1 ("0 = red texture" -- nothing highlighted).
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Opening the reputation window.";
 		reputationui;
 		close;
 	case 11:
 		// ZC_NOTIFY_EFFECT2 on the PLAYER: EF_READYPORTAL (35), the ~25 s portal
 		// ring, long enough that the removal below lands while it still plays.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Portal ring ON (EF_READYPORTAL, 35).";
 		specialeffect2 35;
 		close;
 	case 12:
 		// ZC_REMOVE_EFFECT for the same id on the same unit. A client that
 		// ignores it leaves the ring up until it runs out on its own.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Portal ring OFF.";
 		removespecialeffect2 35;
 		close;
@@ -126,12 +126,12 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// character sees hidden/cloaked units, which it draws as black
 		// silhouettes instead of not at all. rAthena also starts sending such
 		// units' movement to us (clif_send's intravision exemption).
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Intravision ^0000FFON^000000 for 10 minutes.";
 		sc_start SC_INTRAVISION, 600000, 1;
 		close;
 	case 14:
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Intravision ^FF0000OFF^000000.";
 		sc_end SC_INTRAVISION;
 		close;
@@ -140,12 +140,12 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// above) is an effect-table row whose recipe is a procedural FUNC, so it
 		// reaches the client and draws nothing; HAT_EF_BLOSSOM_FLUTTERING (1) is
 		// the client's efst_blossom_fluttering\sakura.str, falling petals.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Petal hat effect ^0000FFON^000000 (HAT_EF_BLOSSOM_FLUTTERING, id 1).";
 		hateffect HAT_EF_BLOSSOM_FLUTTERING, 1;
 		close;
 	case 16:
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Petal hat effect ^FF0000OFF^000000.";
 		hateffect HAT_EF_BLOSSOM_FLUTTERING, 0;
 		close;
@@ -153,16 +153,16 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 		// RODEX fixture. `mail` posts to a CHARACTER id, and the inbox lives on
 		// the char server -- the map server only learns about it when the client
 		// asks (CZ_REQ_REFRESH_MAIL_LIST2), which is exactly the path under test.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Mail sent to you (text only).";
-		mail getcharid(0), "Ragnadot Test", "Carta de teste", "Sem anexo.";
+		mail getcharid(0), "Odin Test", "Carta de teste", "Sem anexo.";
 		close;
 	case 18:
 		// Zeny sets MAIL_TYPE_ZENY in the list entry flags; an item would set
 		// MAIL_TYPE_ITEM. The flags are a bitmask and the client resolves them.
-		mes "[Ragnadot Test]";
+		mes "[Odin Test]";
 		mes "Mail sent to you (1000 zeny attached).";
-		mail getcharid(0), "Ragnadot Test", "Carta com zeny", "Com anexo.", 1000;
+		mail getcharid(0), "Odin Test", "Carta com zeny", "Com anexo.", 1000;
 		close;
 	case 19:
 		close;
@@ -174,10 +174,10 @@ prontera,158,193,4	script	Ragnadot Test	4_M_01,{
 // the two outcomes are distinguishable from the client side.
 S_Progress:
 	.@secs = getarg(0);
-	mes "[Ragnadot Test]";
+	mes "[Odin Test]";
 	mes "Waiting " + .@secs + " seconds...";
 	progressbar "0xffff00", .@secs;
-	mes "[Ragnadot Test]";
+	mes "[Odin Test]";
 	mes "Wait COMPLETED (not cancelled).";
 	close;
 
@@ -200,4 +200,4 @@ OnInit:
 // A cash shop (ZC_PC_CASH_POINT_ITEMLIST / CZ_PC_BUY_CASH_POINT_ITEM) for the
 // client's point-shop window. None ships enabled on this server. Prices are in
 // #CASHPOINTS (GM: @cash N); "Free Cash" is #KAFRAPOINTS (GM: @points N).
-prontera,160,193,4	cashshop	Ragnadot Cash	4_M_02,501:10,909:2
+prontera,160,193,4	cashshop	Odin Cash	4_M_02,501:10,909:2

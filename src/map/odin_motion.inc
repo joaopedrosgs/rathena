@@ -1,4 +1,4 @@
-// Copyright (c) Ragnadot contributors - GPL-3.0-or-later
+// Copyright (c) Odin contributors - GPL-3.0-or-later
 // Included once by clif.cpp. Wire contract: ragnarok/docs/motion-protocol.md.
 // This is an optional presentation protocol; all gameplay still uses unit.cpp.
 namespace {
