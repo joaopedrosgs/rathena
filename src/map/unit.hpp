@@ -36,6 +36,7 @@ struct unit_data {
 	int32 target_to;
 	int32 attacktimer;
 	int32 walktimer;
+	uint32 motion_generation; // Route discontinuities, not cell progress.
 	int32 chaserange;
 	bool stepaction; //Action should be executed on step [Playtester]
 	int32 steptimer; //Timer that triggers the action [Playtester]

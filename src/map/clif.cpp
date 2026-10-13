@@ -83,6 +83,8 @@ struct s_packet_db packet_db[MAX_PACKET_DB + 1];
 unsigned long color_table[COLOR_MAX];
 
 #include "clif_obfuscation.hpp"
+static bool clif_walk_request(map_session_data* sd, int16 x, int16 y);
+#include "ragnadot_motion.inc"
 static bool clif_session_isValid( const map_session_data* sd );
 static void clif_loadConfirm( map_session_data *sd );
 static void clif_favorite_item( map_session_data& sd, uint16 index );
@@ -10116,6 +10118,8 @@ void clif_slide( const block_list& bl, int32 x, int32 y ){
 		p.srcId = disguised_bl_id(bl.id);
 		clif_send(&p, sizeof(p), &bl, SELF);
 	}
+	// Publish only once the gameplay cell agrees with the relocation packet.
+	if (bl.x == x && bl.y == y) clif_motion_changed(const_cast<block_list*>(&bl), 8);
 }
 
 
@@ -11205,7 +11209,8 @@ void clif_notify_time( map_session_data& sd, t_tick time ){
 void clif_parse_TickSend(int32 fd, map_session_data *sd)
 {
 	// TODO: shuffle packet
-	sd->client_tick = RFIFOL(fd,packet_db[RFIFOW(fd,0)].pos[0]);
+	uint32 value = RFIFOL(fd,packet_db[RFIFOW(fd,0)].pos[0]);
+	if (!motion_probe(sd, value)) sd->client_tick = value;
 
 	clif_notify_time( *sd, gettick() );
 }
@@ -11378,33 +11383,29 @@ void clif_progressbar_npc( const npc_data *nd, const map_session_data* sd ){
 /// 0085 <dest>.3B (CZ_REQUEST_MOVE)
 /// 035f <dest>.3B (CZ_REQUEST_MOVE2)
 /// There are various variants of this packet, some of them have padding between fields.
-void clif_parse_WalkToXY(int32 fd, map_session_data *sd)
+static bool clif_walk_request(map_session_data* sd, int16 x, int16 y)
 {
-	int16 x, y;
-
 	if (pc_isdead(sd)) {
 		clif_clearunit_area( *sd, CLR_DEAD );
-		return;
+		return false;
 	}
 
 	if (sd->sc.opt1 && ( sd->sc.opt1 == OPT1_STONEWAIT || sd->sc.opt1 == OPT1_BURNING ))
 		; //You CAN walk on this OPT1 value.
 	else if (sd->progressbar.npc_id) {
 		clif_progressbar_abort(sd);
-		return; // First walk attempt cancels the progress bar
+		return false; // First walk attempt cancels the progress bar
 	} else if (pc_cant_act(sd))
-		return;
+		return false;
 
 	if(sd->sc.getSCE(SC_RUN) || sd->sc.getSCE(SC_WUGDASH))
-		return;
+		return false;
 
-	// TODO: shuffle packet
-	RFIFOPOS(fd, packet_db[RFIFOW(fd,0)].pos[0], &x, &y, nullptr);
 
 	//A move command one cell west is only valid if the target cell is free
 	if(battle_config.official_cell_stack_limit > 0
 		&& sd->x == x+1 && sd->y == y && map_count_oncell(sd->m, x, y, BL_CHAR|BL_NPC, 1))
-		return;
+		return false;
 
 	// Cloaking wall check is actually updated when you click to process next movement
 	// not when you move each cell.  This is official behaviour.
@@ -11424,7 +11425,14 @@ void clif_parse_WalkToXY(int32 fd, map_session_data *sd)
 	if (battle_config.mer_idle_no_share && sd->md && battle_config.idletime_mer_option&IDLE_WALK)
 		sd->idletime_mer = last_tick;
 
-	unit_walktoxy(sd, x, y, 4);
+	return unit_walktoxy(sd, x, y, 4) != 0;
+}
+
+void clif_parse_WalkToXY(int32 fd, map_session_data *sd)
+{
+	int16 x, y;
+	RFIFOPOS(fd, packet_db[RFIFOW(fd,0)].pos[0], &x, &y, nullptr);
+	clif_walk_request(sd, x, y);
 }
 
 
@@ -25884,6 +25892,8 @@ void do_init_clif(void) {
 	}
 
 	packetdb_readdb();
+	add_timer_func_list(motion_recovery_timer, "motion_recovery_timer");
+	add_timer_interval(gettick() + 200, motion_recovery_timer, 0, 0, 200);
 
 	set_defaultparse(clif_parse);
 	if( make_listen_bind(bind_ip,map_port) == -1 ) {

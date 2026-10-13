@@ -2046,4 +2046,9 @@
 	parseable_packet( HEADER_CZ_MOVE_ITEM_TO_PERSONAL, sizeof( PACKET_CZ_MOVE_ITEM_TO_PERSONAL ), clif_parse_MoveFromKafraFav, 0 );
 #endif
 
+// Private opcodes are used only after the ordinary TickSend probe/offer/accept.
+packet(0x0cf0,16);
+parseable_packet(0x0cf1,8,clif_parse_MotionAccept,0);
+parseable_packet(0x0cf2,14,clif_parse_MotionMove,0);
+packet(0x0cf3,-1);
 #endif /* CLIF_PACKETDB_HPP */

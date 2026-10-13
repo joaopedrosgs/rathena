@@ -503,6 +503,12 @@ public:
 	uint16 mapindex;
 	unsigned char head_dir; //0: Look forward. 1: Look right, 2: Look left.
 	t_tick client_tick;
+	// Optional Ragnadot motion v1; never transmitted to unnegotiated clients.
+	struct {
+		bool enabled = false;
+		t_tick probe_at = 0;
+		uint32 epoch = 0, input = 0, snapshot = 0, cursor = 0;
+	} motion;
 	int32 npc_id,npc_shopid; //for script follow scriptoid;   ,npcid
 	std::vector<int32> npc_id_dynamic;
 	std::vector<int32> areanpc, npc_ontouch_;	///< Array of OnTouch and OnTouch_ NPC ID

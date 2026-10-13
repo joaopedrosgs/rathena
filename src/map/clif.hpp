@@ -1510,4 +1510,7 @@ void clif_noask_sub( const map_session_data& sd, const map_session_data& tsd, in
 
 void clif_specialpopup(const map_session_data& sd, int32 id);
 
+// Negotiated extension; unit owns routes, clif only serializes them.
+void clif_motion_changed(block_list* bl, uint8 reason);
+void clif_motion_timer_late(t_tick scheduled);
 #endif /* CLIF_HPP */

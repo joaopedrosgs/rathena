@@ -316,6 +316,7 @@ int32 unit_walktoxy_sub(block_list *bl)
 	}
 
 	unit_walktoxy_nextcell(*bl, true, gettick());
+	clif_motion_changed(bl, 1);
 
 	return 1;
 }
@@ -557,6 +558,7 @@ static TIMER_FUNC(unit_walktoxy_timer)
 		return 0;
 	}
 
+	if (const TimerData* motion_td = get_timer(tid)) clif_motion_timer_late(motion_td->tick);
 	ud->walktimer = INVALID_TIMER;
 	// As movement to next cell finished, set sub-cell position to center
 	ud->sx = 8;
@@ -1235,6 +1237,7 @@ bool unit_movepos(block_list *bl, int16 dst_x, int16 dst_y, int32 easy, bool che
 		}
 	}
 
+	clif_motion_changed(bl, 8);
 	return true;
 }
 
@@ -1741,6 +1744,7 @@ bool unit_stop_walking( block_list* bl, int32 type, t_tick canmove_delay ){
 	ud->walkpath.path_pos = 0;
 	ud->to_x = bl->x;
 	ud->to_y = bl->y;
+	clif_motion_changed(bl, canmove_delay > 0 ? 5 : 4);
 
 	if( canmove_delay > 0 ){
 		ud->canmove_tick = gettick() + canmove_delay;
@@ -2030,6 +2034,7 @@ int32 unit_set_walkdelay(block_list *bl, t_tick tick, t_tick delay, int32 type, 
 		if (!unit_can_move(bl) || !(bl->type&battle_config.damage_walk_delay)) {
 			// Stop on the closest cell center
 			unit_stop_walking( bl, USW_MOVE_FULL_CELL );
+			clif_motion_changed(bl, type ? 4 : 5);
 			return 0;
 		}
 
@@ -2058,6 +2063,7 @@ int32 unit_set_walkdelay(block_list *bl, t_tick tick, t_tick delay, int32 type, 
 				add_timer(ud->canmove_tick, unit_resume_running, bl->id, (intptr_t)ud);
 			else {
 				unit_stop_walking( bl, USW_MOVE_FULL_CELL );
+				clif_motion_changed(bl, type ? 4 : 5);
 
 				if(ud->target_to != 0)
 					add_timer(ud->canmove_tick+1, unit_walktobl_sub, bl->id, ud->target_to);
