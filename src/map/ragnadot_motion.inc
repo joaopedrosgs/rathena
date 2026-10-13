@@ -3,6 +3,9 @@
 // This is an optional presentation protocol; all gameplay still uses unit.cpp.
 namespace {
 constexpr uint32 MOTION_PROBE_A = 0x52474d31, MOTION_PROBE_B = 0x314d4752;
+// Feature bits: 1 the v1 layout, 2 relocation fence (0x0cf4), 4 change-driven recovery.
+constexpr uint16 MOTION_FEATURES = 1 | 2 | 4;
+constexpr uint32 MOTION_HEARTBEAT_TICKS = 5; // full rotating batch every 5 x 200 ms
 static uint32 motion_epoch = 0;
 static uint16 motion_late = 0;
 static t_tick motion_late_at = 0;
@@ -19,8 +22,9 @@ static bool motion_probe(map_session_data* sd, uint32 value) {
 	if (sd->motion.probe_at && DIFF_TICK(now,sd->motion.probe_at) >= 0 && DIFF_TICK(now,sd->motion.probe_at) < 2000) {
 		sd->motion.enabled = false; sd->motion.epoch = ++motion_epoch;
 		sd->motion.input = sd->motion.snapshot = sd->motion.cursor = 0;
+		sd->motion.fence = sd->motion.beat = 0; sd->motion.sent.clear();
 		std::vector<uint8> b; motion_u16(b,0xcf0); motion_u16(b,1);
-		motion_u32(b,sd->motion.epoch); motion_u32(b,static_cast<uint32>(now)); motion_u16(b,1); motion_u16(b,200);
+		motion_u32(b,sd->motion.epoch); motion_u32(b,static_cast<uint32>(now)); motion_u16(b,MOTION_FEATURES); motion_u16(b,200);
 		motion_send(sd,b);
 	}
 	sd->motion.probe_at = 0; return true;
@@ -37,6 +41,18 @@ static bool motion_visible(map_session_data* sd, block_list* bl) {
 	if (bl->type == BL_PC && population_engine_is_population_pc(bl->id)) return true;
 	return battle_config.update_enemy_position || sd->special_state.intravision ||
 		sd->sc.getSCE(SC_INTRAVISION) || battle_check_target(bl,sd,BCT_ENEMY) <= 0;
+}
+// What a row would tell this client, minus progress along an already-sent path.
+static uint64 motion_signature(map_session_data* sd, block_list* bl) {
+	unit_data* ud = unit_bl2ud(bl);
+	bool walking = ud->walktimer != INVALID_TIMER && get_timer(ud->walktimer) && ud->walkpath.path_pos < ud->walkpath.path_len;
+	uint64 s = ud->motion_generation;
+	s = s * 1000003u ^ static_cast<uint16>(status_get_speed(bl));
+	s = s * 1000003u ^ (walking ? 1u : 0u);
+	s = s * 1000003u ^ (static_cast<uint32>(static_cast<uint16>(ud->to_x)) << 16 | static_cast<uint16>(ud->to_y));
+	if (!walking) s = s * 1000003u ^ (static_cast<uint32>(static_cast<uint16>(bl->x)) << 16 | static_cast<uint16>(bl->y));
+	if (bl->id == sd->id) s = s * 1000003u ^ sd->motion.input;
+	return s;
 }
 static void motion_row(std::vector<uint8>& b, map_session_data* sd, block_list* bl, t_tick now, uint8 reason) {
 	unit_data* ud = unit_bl2ud(bl);
@@ -66,7 +82,7 @@ static void motion_snapshot(map_session_data* sd, const std::vector<block_list*>
 	motion_u16(b,0xcf3); motion_u16(b,0); motion_u32(b,sd->motion.epoch);
 	motion_u32(b,++sd->motion.snapshot); motion_u32(b,static_cast<uint32>(now)); motion_u16(b,static_cast<uint16>(units.size()));
 	motion_u16(b,DIFF_TICK(now,motion_late_at) < 1000 ? motion_late : 0);
-	for (block_list* bl : units) motion_row(b,sd,bl,now,reason);
+	for (block_list* bl : units) { motion_row(b,sd,bl,now,reason); sd->motion.sent[bl->id] = motion_signature(sd,bl); }
 	b[2] = static_cast<uint8>(b.size()); b[3] = static_cast<uint8>(b.size() >> 8); motion_send(sd,b);
 }
 static int32 motion_collect(block_list* bl, va_list ap) {
@@ -76,12 +92,29 @@ static int32 motion_collect(block_list* bl, va_list ap) {
 }
 static int32 motion_recover(map_session_data* sd, va_list) {
 	if (!sd->motion.enabled || !sd->prev || !session_isActive(sd->fd)) return 0;
-	std::vector<block_list*> nearby, rows{sd};
+	std::vector<block_list*> nearby, rows;
 	map_foreachinallarea(motion_collect,sd->m,sd->x-AREA_SIZE,sd->y-AREA_SIZE,sd->x+AREA_SIZE,sd->y+AREA_SIZE,BL_CHAR,sd,&nearby);
-	// Bounded batches with rotating recovery, including stopped actors whose stop was missed.
-	for (size_t i=0; i<nearby.size() && i<15; ++i) rows.push_back(nearby[(sd->motion.cursor+i)%nearby.size()]);
-	if (!nearby.empty()) sd->motion.cursor = (sd->motion.cursor+15)%nearby.size();
-	motion_snapshot(sd,rows); return 0;
+	// Forget units that left: a returning unit is new state again.
+	std::unordered_map<int32, uint64> kept;
+	auto keep = [&](block_list* bl) { auto it = sd->motion.sent.find(bl->id); if (it != sd->motion.sent.end()) kept.emplace(*it); };
+	keep(sd); for (block_list* bl : nearby) keep(bl);
+	sd->motion.sent.swap(kept);
+	// TCP delivers every event row, so recovery sends only state the client has
+	// not been told (a missed stop, a speed change, a unit new in view)...
+	auto changed = [&](block_list* bl) { auto it = sd->motion.sent.find(bl->id); return it == sd->motion.sent.end() || it->second != motion_signature(sd,bl); };
+	if (changed(sd)) rows.push_back(sd);
+	for (block_list* bl : nearby) if (rows.size() < 16 && changed(bl)) rows.push_back(bl);
+	// ...plus a slow rotating heartbeat that bounds any divergence it cannot see.
+	if (++sd->motion.beat % MOTION_HEARTBEAT_TICKS == 0) {
+		if (std::find(rows.begin(),rows.end(),sd) == rows.end() && rows.size() < 16) rows.insert(rows.begin(),sd);
+		for (size_t i=0; i<nearby.size() && i<15 && rows.size() < 16; ++i) {
+			block_list* bl = nearby[(sd->motion.cursor+i)%nearby.size()];
+			if (std::find(rows.begin(),rows.end(),bl) == rows.end()) rows.push_back(bl);
+		}
+		if (!nearby.empty()) sd->motion.cursor = (sd->motion.cursor+15)%nearby.size();
+	}
+	if (!rows.empty()) motion_snapshot(sd,rows);
+	return 0;
 }
 static TIMER_FUNC(motion_recovery_timer) { map_foreachpc(motion_recover); return 0; }
 static int32 motion_notify(block_list* recipient, va_list ap) {
@@ -99,18 +132,28 @@ void clif_motion_timer_late(t_tick scheduled) {
 void clif_motion_changed(block_list* bl, uint8 reason) {
 	unit_data* ud = unit_bl2ud(bl); if (!ud || !bl->prev) return;
 	++ud->motion_generation;
+	// Feature bit 1: a click sent before the client saw this relocation is stale.
+	if (reason == 8 && bl->type == BL_PC) ((map_session_data*)bl)->motion.fence = ud->motion_generation;
 	map_foreachinallarea(motion_notify,bl->m,bl->x-AREA_SIZE,bl->y-AREA_SIZE,bl->x+AREA_SIZE,bl->y+AREA_SIZE,BL_PC,bl,(int)reason);
 }
 static void clif_parse_MotionAccept(int32 fd, map_session_data* sd) {
 	if (RFIFOW(fd,2) != 1 || !sd->motion.epoch || RFIFOL(fd,4) != sd->motion.epoch) return;
 	sd->motion.enabled = true; motion_snapshot(sd,{sd});
 }
-static void clif_parse_MotionMove(int32 fd, map_session_data* sd) {
-	if (!sd->motion.enabled || RFIFOL(fd,2) != sd->motion.epoch) return;
-	uint32 input = RFIFOL(fd,6);
+static void motion_move(map_session_data* sd, uint32 input, int16 x, int16 y, bool fenced) {
 	if ((int32)(input-sd->motion.input) > 0) {
 		sd->motion.input = input;
-		bool accepted = clif_walk_request(sd,RFIFOW(fd,10),RFIFOW(fd,12));
+		// Acknowledged but not executed: it was aimed from before a relocation.
+		bool accepted = !fenced && clif_walk_request(sd,x,y);
 		motion_snapshot(sd,{sd},accepted ? 1 : 6);
 	} else motion_snapshot(sd,{sd});
+}
+static void clif_parse_MotionMove(int32 fd, map_session_data* sd) {
+	if (!sd->motion.enabled || RFIFOL(fd,2) != sd->motion.epoch) return;
+	motion_move(sd,RFIFOL(fd,6),RFIFOW(fd,10),RFIFOW(fd,12),false);
+}
+static void clif_parse_MotionMove2(int32 fd, map_session_data* sd) {
+	if (!sd->motion.enabled || RFIFOL(fd,2) != sd->motion.epoch) return;
+	uint32 seen = RFIFOL(fd,10);
+	motion_move(sd,RFIFOL(fd,6),RFIFOW(fd,14),RFIFOW(fd,16),(int32)(seen-sd->motion.fence) < 0);
 }

@@ -6,6 +6,7 @@
 
 #include <bitset>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <common/cbasetypes.hpp>
@@ -508,6 +509,9 @@ public:
 		bool enabled = false;
 		t_tick probe_at = 0;
 		uint32 epoch = 0, input = 0, snapshot = 0, cursor = 0;
+		uint32 fence = 0; // self generation of the last relocation (feature bit 1)
+		uint32 beat = 0;  // recovery ticks; every fifth is a full heartbeat
+		std::unordered_map<int32, uint64> sent; // last row state per visible unit
 	} motion;
 	int32 npc_id,npc_shopid; //for script follow scriptoid;   ,npcid
 	std::vector<int32> npc_id_dynamic;

@@ -2051,4 +2051,5 @@ packet(0x0cf0,16);
 parseable_packet(0x0cf1,8,clif_parse_MotionAccept,0);
 parseable_packet(0x0cf2,14,clif_parse_MotionMove,0);
 packet(0x0cf3,-1);
+parseable_packet(0x0cf4,18,clif_parse_MotionMove2,0);
 #endif /* CLIF_PACKETDB_HPP */
