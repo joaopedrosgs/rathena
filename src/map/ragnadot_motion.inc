@@ -30,7 +30,13 @@ static bool motion_visible(map_session_data* sd, block_list* bl) {
 	if (bl->id == sd->id) return true;
 	if (bl->type == BL_PC && pc_isinvisible((map_session_data*)bl)) return false;
 	status_change* sc = status_get_sc(bl);
-	return !sc || !(sc->option & (OPTION_HIDE | OPTION_CLOAK | OPTION_INVISIBLE | OPTION_CHASEWALK));
+	bool hidden = sc && (sc->option & (OPTION_HIDE | OPTION_CLOAK | OPTION_INVISIBLE | OPTION_CHASEWALK));
+	if (!hidden) return true;
+	if (battle_config.hide_cloaked_units & bl->type) return false;
+	// Match clif_move -> clif_send_sub's ally/Intravision restriction.
+	if (bl->type == BL_PC && population_engine_is_population_pc(bl->id)) return true;
+	return battle_config.update_enemy_position || sd->special_state.intravision ||
+		sd->sc.getSCE(SC_INTRAVISION) || battle_check_target(bl,sd,BCT_ENEMY) <= 0;
 }
 static void motion_row(std::vector<uint8>& b, map_session_data* sd, block_list* bl, t_tick now, uint8 reason) {
 	unit_data* ud = unit_bl2ud(bl);
