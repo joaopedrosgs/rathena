@@ -3539,15 +3539,6 @@ void skill_consume_hpspap(block_list* bl, uint16 skill_id, int32 hp, int32 sp, i
 	case MS_MAGNUM:
 		hp = 0;
 		break;
-	// [Odin] The official client shows Grand Cross's HP cost as damage the
-	// caster takes, so it arrives as a hit on the caster. DMG_SPLASH with
-	// level -1, like the skill's other hits: the client draws the number
-	// without replaying the cast on the caster.
-	case CR_GRANDCROSS:
-	case NPC_GRANDDARKNESS:
-		if (hp > 0)
-			clif_skill_damage(*bl, *bl, gettick(), 0, 0, hp, 1, skill_id, -1, DMG_SPLASH);
-		break;
 	}
 
 	status_zap(bl, hp, sp, ap);
